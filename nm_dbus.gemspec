@@ -15,4 +15,6 @@ Gem::Specification.new do |spec|
   spec.files         = Dir['README.md', 'MIT-LICENSE', 'lib/**/*.rb']
 
   spec.add_dependency 'zeitwerk',   '~> 2.4.0'
+  spec.add_dependency 'rexml'
+  spec.add_dependency 'ruby-dbus',  '~> 0.16.0'
 end

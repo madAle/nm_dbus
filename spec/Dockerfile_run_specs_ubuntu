@@ -1,5 +1,5 @@
 #FROM fancypixel/raspi3_buster_rvm:latest
-FROM debian_buster_rvm:latest
+FROM ubuntu_20_04_rvm:latest
 
 LABEL maintainer="Alessandro Verlato <alessandro@fancypixel.it>"
 
@@ -15,3 +15,4 @@ RUN source /etc/profile.d/rvm.sh
 #
 RUN rvm install $ruby_version
 WORKDIR /running
+RUN apt-get update && apt-get install -y network-manager

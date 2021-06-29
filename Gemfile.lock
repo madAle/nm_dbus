@@ -2,6 +2,8 @@ PATH
   remote: .
   specs:
     nm_dbus (0.0.1)
+      rexml
+      ruby-dbus (~> 0.16.0)
       zeitwerk (~> 2.4.0)
 
 GEM
@@ -46,6 +48,7 @@ GEM
     rb-fsevent (0.11.0)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
+    rexml (3.2.5)
     rspec (3.10.0)
       rspec-core (~> 3.10.0)
       rspec-expectations (~> 3.10.0)
@@ -59,6 +62,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.10.0)
     rspec-support (3.10.2)
+    ruby-dbus (0.16.0)
     shellany (0.0.1)
     simplecov (0.21.2)
       docile (~> 1.1)
@@ -72,6 +76,7 @@ GEM
 PLATFORMS
   armv7l-linux-eabihf
   x86_64-darwin-20
+  x86_64-linux
 
 DEPENDENCIES
   guard (~> 2.17.0)

@@ -11,5 +11,5 @@ bundle check || bundle install
 service dbus start &> /dev/null
 service network-manager start &> /dev/null 2>&1
 
-# Exec given args
-bundle exec "$@"
+# Exec guard
+bundle exec guard

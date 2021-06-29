@@ -1,7 +1,8 @@
-FROM debian:buster
+FROM ubuntu:20.04
 
 LABEL maintainer="Alessandro Verlato <alessandro@fancypixel.it>"
 
+ARG DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-l", "-c"]
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
