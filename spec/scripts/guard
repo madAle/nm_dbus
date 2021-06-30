@@ -1,0 +1,54 @@
+#!/bin/bash
+
+
+usage() {
+  echo "Usage: $0 -a <target IP addr> [-u <ssh user>] [-p <ssh server port>]" 1>&2
+  exit 1
+}
+
+SCRIPT_PATH="$(
+  cd "$(dirname "$0")" >/dev/null 2>&1
+  pwd -P
+)"
+
+LOCAL_MOUNT_POINT=$SCRIPT_PATH/../../
+
+# Load utility files.
+source ${SCRIPT_PATH}/dsl.sh
+
+# Load .env
+if [ -f ${SCRIPT_PATH}/.env ]
+then
+  export $(cat ${SCRIPT_PATH}/.env | xargs)
+fi
+
+while getopts a:u:p:h:f:y:g:b: option; do
+  case "${option}" in
+  a) TARGETADDR=${OPTARG} ;;
+  u) SSH_USER=${OPTARG} ;;
+  p) SSH_PORT=${OPTARG} ;;
+  h) usage ;;
+  f) REMOTE_FS_PATH=${OPTARG} ;;
+  y) REMOTE_RUBY_BIN_PATH=${OPTARG} ;;
+  g) REMOTE_GEM_HOME=${OPTARG} ;;
+  b) REMOTE_BUNDLE_PATH=${OPTARG} ;;
+  *) usage ;;
+  esac
+done
+
+# Create remote_fs_dir
+ssh_do mkdir -p $REMOTE_FS_PATH
+ssh_do mkdir -p REMOTE_BUNDLE_PATH
+
+# Check if we need to mount the remote fs
+FOUND=$(df -h | grep $LOCAL_MOUNT_POINT )
+
+if $FOUND; then
+  # We already mounted remore FS. Umount and remount
+  sudo umount -f $LOCAL_MOUNT_POINT
+  sshfs -C -p $SSH_PORT $LOCAL_MOUNT_POINT $SSH_USER@$TARGETADDR:${REMOTE_FS_PATH}
+fi
+
+# Execute guard
+ssh_do GEM_HOME=$REMOTE_GEM_HOME BUNDLE_PATH=$REMOTE_BUNDLE_PATH bundle exec guard
+

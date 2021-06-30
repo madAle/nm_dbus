@@ -1,0 +1,43 @@
+#!/bin/bash
+
+SSH_PORT=22
+SSH_USER=root
+
+usage() {
+  echo "Usage: $0 -a <target IP addr> [-u <ssh user>] [-p <ssh server port>]" 1>&2
+  exit 1
+}
+
+SCRIPT_PATH="$(
+  cd "$(dirname "$0")" >/dev/null 2>&1
+  pwd -P
+)"
+
+source $SCRIPT_PATH/dsl.sh
+
+# Load .env
+if [ -f ${SCRIPT_PATH}/.env ]
+then
+  export $(cat ${SCRIPT_PATH}/.env | xargs)
+fi
+
+while getopts a:u:p:h: option; do
+  case "${option}" in
+  a) TARGETADDR=${OPTARG} ;;
+  u) SSH_USER=${OPTARG} ;;
+  p) SSH_PORT=${OPTARG} ;;
+  h) usage ;;
+  *) usage ;;
+  esac
+done
+
+# Ask for Target IP address if not provided
+if [ -z "$TARGETADDR" ]; then
+  printf "Insert the target IP Address: \n"
+  read TARGETADDR
+fi
+
+# Run a ssh_do only if some argument has been supplied
+if [ $# -ne 0 ]; then
+  ssh_do "$@"
+fi
