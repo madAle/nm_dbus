@@ -13,7 +13,7 @@ SCRIPT_PATH="$(
   pwd -P
 )"
 
-source $SCRIPT_PATH/dsl.sh
+source $SCRIPT_PATH/utils/dsl.sh
 
 # Load .env
 if [ -f ${SCRIPT_PATH}/.env ]

@@ -1,2 +1,0 @@
- * Starting network connection manager NetworkManager
-   ...done.

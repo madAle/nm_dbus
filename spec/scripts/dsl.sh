@@ -26,11 +26,11 @@ function do_flash {
 }
 
 function ssh_do {
-  ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $SSH_USER@$TARGETADDR -p $SSH_PORT "$@"
+  ssh -tt -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $SSH_USER@$TARGETADDR -p $SSH_PORT "$@"
 }
 
 function do_rsync {
-  rsync -e "ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT" --rsync-path="sudo rsync" "$@"
+  rsync -e "ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT" --rsync-path="sudo rsync" --exclude-from="${SCRIPT_PATH}/.exclude_from_sync" -raupz "$@"
 }
 
 function ignoring_errors {

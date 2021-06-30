@@ -19,6 +19,9 @@ RSpec.configure do |config|
   end
 
   config.before(:suite) do
+    unless ENV['RUNNING_ON_TARGET']
+      exit
+    end
   end
 
   config.after(:suite) do

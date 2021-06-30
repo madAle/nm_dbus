@@ -1,0 +1,17 @@
+.git/
+build/
+.bundle/
+.dockerignore
+.gitignore
+Dockerfile
+.travis.yml
+bitbucket-pipelines.yml
+Dockerfile*
+coverage/
+.github/
+tmp/
+*.md
+LICENSE.txt
+.rspec_status
+.idea/
+Gemfile.lock

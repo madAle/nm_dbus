@@ -79,4 +79,19 @@ guard :rspec, cmd: "bundle exec rspec" do
   watch(%r{^spec/acceptance/steps/(.+)_steps\.rb$}) do |m|
     Dir[File.join("**/#{m[1]}.feature")][0] || "spec/acceptance"
   end
+
+  # Execute a callback when starting the run
+  callback(:run_on_modifications_begin) { |*args| sync_changed_files args }
+  callback(:run_on_removals_begin) { |*args| sync_changed_files args }
+  callback(:run_on_additions_begin) { |*args| sync_changed_files args }
+  callback(:run_on_additions_begin) { |*args| sync_changed_files args }
+  callback(:reload_begin) { |*args| sync_changed_files args }
+end
+
+def sync_changed_files(args)
+  on_target = ENV['RUNNING_ON_TARGET']
+  unless on_target
+    changed_files = args.last
+    system "./spec/scripts/rsync.sh #{changed_files.join ' '}"
+  end
 end

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 usage() {
   echo "Usage: $0 -a <target IP addr> [-u <ssh user>] [-p <ssh server port>]" 1>&2
   exit 1
@@ -11,9 +10,7 @@ SCRIPT_PATH="$(
   pwd -P
 )"
 
-SOURCES_PATH=$SCRIPT_PATH/../..
-
-# Load utility files
+# Load utility files.
 source ${SCRIPT_PATH}/dsl.sh
 
 # Load .env
@@ -36,20 +33,13 @@ while getopts a:u:p:h:f:y:g:b: option; do
   esac
 done
 
-# Create remote_fs_dir
-ssh_do mkdir -p $REMOTE_FS_PATH
-ssh_do mkdir -p $REMOTE_BUNDLE_PATH
+do_rsync -R "$@" $SSH_USER@$TARGETADDR:$REMOTE_FS_PATH
 
-# Do an initial rsync
-do_rsync $SOURCES_PATH $SSH_USER@$TARGETADDR:$REMOTE_FS_PATH
-ssh_do sudo chown -R $SSH_USER $REMOTE_FS_PATH
+folders_list=""
+for path in "$@"
+do
+    parent_folder=$(echo "$path" | cut -d "/" -f1 -s)
+    folders_list="${folders_list} ${REMOTE_FS_PATH}/${parent_folder}"
+done
 
-EXPORT_STRING="export PATH=$PATH:$REMOTE_RUBY_BIN_PATH;
-               export GEM_HOME=$REMOTE_GEM_HOME;
-               export BUNDLE_PATH=$REMOTE_BUNDLE_PATH;
-               export RUNNING_ON_TARGET=true"
-
-ssh_do "$EXPORT_STRING; cd $REMOTE_FS_PATH; bundle check || bundle install"
-
-# Execute guard
-ssh_do "$EXPORT_STRING; cd $REMOTE_FS_PATH; bundle exec guard"
+ssh_do "cd $REMOTE_FS_PATH; sudo chown -R $SSH_USER ${@}"
