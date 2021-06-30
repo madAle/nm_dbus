@@ -1,5 +1,4 @@
-#FROM fancypixel/raspi3_buster_rvm:latest
-FROM ubuntu_20_04_rvm:latest
+FROM ubuntu_18_04_rvm:latest
 
 LABEL maintainer="Alessandro Verlato <alessandro@fancypixel.it>"
 

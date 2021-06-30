@@ -94,7 +94,6 @@ end
 # end
 
 
-# loop = DBus::Main.new
-# loop << bus
-# loop.run
-#
+loop = DBus::Main.new
+loop << bus
+loop.run
