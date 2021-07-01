@@ -17,4 +17,5 @@ group :test do
   gem 'guard-rspec', '~> 4.7.0'
   gem 'guard-bundler', '~> 3.0.0'
   gem 'simplecov', require: false
+  gem 'dotenv', '~> 2.7.6', require: false
 end

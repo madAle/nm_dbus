@@ -30,6 +30,22 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ### Running Tests
 
+First copy the template `.env` file: 
+
+`cp spec/scripts/.env.example spec/scripts/.env`
+
+For running the specs we use Guard and got your back by providing some basic tool that can simplify your developer's life.
+
+There are two methods for runnings tests:
+
+1. Use an external device/PC/box/virtual machine with the D-Bus + NetworkManager setup and run the tests there. Set `RUN_ON_TARGET=true` in `spec/scripts/.env` and also adjust other env variables to your needs.
+   Just open up a terminal and: `spec/scripts/remote_guard` -> This will automatically start Guard on the target machine and setup it to run automatically.
+   Note: A detached Guard process is started on your machine too, and this communicates with the remote one.
+
+2. **NOT RECOMMENDED** - Run them locally (on your machine), possible if you're on Linux and have the D-Bus + NetworkManager setup, **but not recommended because interacting with networking on your host machine could potentially cause huge problems**.
+   Just set `RUN_ON_TARGET=false` in `spec/scripts/.env` file and launch `guard` as usual. 
+   
+#### Guard
 
 
 ## Contributing

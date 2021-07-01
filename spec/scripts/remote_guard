@@ -1,0 +1,59 @@
+#!/bin/bash
+
+usage() {
+  echo "Usage: $0 -a <target IP addr> [-u <ssh user>] [-p <ssh server port>]" 1>&2
+  exit 1
+}
+
+SCRIPT_PATH="$(
+  cd "$(dirname "$0")" >/dev/null 2>&1
+  pwd -P
+)"
+
+SOURCES_PATH=$SCRIPT_PATH/../..
+
+# Load utility files
+source ${SCRIPT_PATH}/dsl.sh
+
+# Load .env
+if [ -f ${SCRIPT_PATH}/.env ]
+then
+  export $(cat ${SCRIPT_PATH}/.env | xargs)
+fi
+
+while getopts a:u:p:h:f:y:g:b: option; do
+  case "${option}" in
+  a) TARGETADDR=${OPTARG} ;;
+  u) SSH_USER=${OPTARG} ;;
+  p) SSH_PORT=${OPTARG} ;;
+  h) usage ;;
+  f) REMOTE_FS_PATH=${OPTARG} ;;
+  y) REMOTE_RUBY_BIN_PATH=${OPTARG} ;;
+  g) REMOTE_GEM_HOME=${OPTARG} ;;
+  b) REMOTE_BUNDLE_PATH=${OPTARG} ;;
+  *) usage ;;
+  esac
+done
+
+# Create remote_fs_dir
+ssh_do mkdir -p $REMOTE_FS_PATH
+ssh_do mkdir -p $REMOTE_BUNDLE_PATH
+
+# Do an initial rsync
+do_rsync $SOURCES_PATH $SSH_USER@$TARGETADDR:$REMOTE_FS_PATH
+ssh_do sudo chown -R $SSH_USER $REMOTE_FS_PATH
+
+EXPORT_STRING="export PATH=$PATH:$REMOTE_RUBY_BIN_PATH;
+               export GEM_HOME=$REMOTE_GEM_HOME;
+               export BUNDLE_PATH=$REMOTE_BUNDLE_PATH;
+               export ON_TARGET=true"
+
+# Execute local guard, redirecting its output to /dev/null and send it to background
+#guard -i > guard_log.txt 2>&1 &
+guard -i > /dev/null 2>&1 &
+
+# Execute remote guard
+ssh_do "$EXPORT_STRING; cd $REMOTE_FS_PATH; bundle exec guard -c"
+
+# When exiting remote guard, remember to kill local guard
+kill -9 $(ps aux | grep -E '[g]uard(-core|\ -i)' | awk '{print $2}')

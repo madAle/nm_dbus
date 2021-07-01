@@ -1,3 +1,6 @@
+require 'dotenv'
+Dotenv.load File.join(__dir__, 'spec/scripts/.env')
+
 # A sample Guardfile
 # More info at https://github.com/guard/guard#readme
 
@@ -89,8 +92,11 @@ guard :rspec, cmd: "bundle exec rspec" do
 end
 
 def sync_changed_files(args)
-  on_target = ENV['RUNNING_ON_TARGET']
-  unless on_target
+  run_on_target = ENV['RUN_ON_TARGET']
+  on_target = ENV['ON_TARGET']
+
+  # If we run on target, update modified files on the target
+  if run_on_target && on_target.nil?
     changed_files = args.last
     system "./spec/scripts/rsync.sh #{changed_files.join ' '}"
   end

@@ -19,7 +19,8 @@ RSpec.configure do |config|
   end
 
   config.before(:suite) do
-    unless ENV['RUNNING_ON_TARGET']
+    run_on_target = ENV['RUN_ON_TARGET']
+    if run_on_target.eql? 'true'
       exit
     end
   end

@@ -1,8 +1,7 @@
 #!/bin/bash
 
-
 usage() {
-  echo "Usage: $0 -a <target IP addr> [-u <ssh user>] [-p <ssh server port>]" 1>&2
+  echo "Usage: $0 -a <target IP addr> [-u <ssh user>] [-p <ssh server port>] [-h <print usage>] [-f <remote dir path>] [-y <remote Ruby bin path>] [-g <remote GEM_HOME>] [-b <remote BUNDLE_PATH>]" 1>&2
   exit 1
 }
 
@@ -36,20 +35,12 @@ while getopts a:u:p:h:f:y:g:b: option; do
   esac
 done
 
-# Create remote_fs_dir
-ssh_do mkdir -p $REMOTE_FS_PATH
-ssh_do mkdir -p $REMOTE_BUNDLE_PATH
-
-# Do an initial rsync
-do_rsync $SOURCES_PATH $SSH_USER@$TARGETADDR:$REMOTE_FS_PATH
-ssh_do sudo chown -R $SSH_USER $REMOTE_FS_PATH
-
 EXPORT_STRING="export PATH=$PATH:$REMOTE_RUBY_BIN_PATH;
                export GEM_HOME=$REMOTE_GEM_HOME;
                export BUNDLE_PATH=$REMOTE_BUNDLE_PATH;
-               export RUNNING_ON_TARGET=true"
+               export ON_TARGET=true"
 
 ssh_do "$EXPORT_STRING; cd $REMOTE_FS_PATH; bundle check || bundle install"
 
-# Execute guard
-ssh_do "$EXPORT_STRING; cd $REMOTE_FS_PATH; bundle exec guard"
+# Execute bundle exec
+ssh_do "$EXPORT_STRING; cd $REMOTE_FS_PATH; bundle exec $@"
