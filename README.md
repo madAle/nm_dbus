@@ -42,7 +42,7 @@ There are two methods for runnings tests:
    Just open up a terminal and: `spec/scripts/remote_guard` -> This will automatically start Guard on the target machine and setup it to run automatically.
    Note: A detached Guard process is started on your machine too, and this communicates with the remote one.
 
-2. **NOT RECOMMENDED** - Run them locally (on your machine), possible if you're on Linux and have the D-Bus + NetworkManager setup, **but not recommended because interacting with networking on your host machine could potentially cause huge problems**.
+2. **NOT RECOMMENDED** - Run them locally (on your machine). This is possible if you're e.g. on Linux and have the D-Bus + NetworkManager setup, **but not recommended because interacting with networking on your host machine could potentially cause huge problems**.
    Just set `RUN_ON_TARGET=false` in `spec/scripts/.env` file and launch `guard` as usual. 
    
 
