@@ -1,0 +1,50 @@
+FROM balenalib/imx8m-var-dart-debian:bullseye
+#FROM balenablocks/dbus
+
+LABEL maintainer="Alessandro Verlato <alessandro@fancypixel.it>"
+
+ARG ruby_version=ruby-3.0.1
+
+SHELL ["/bin/bash", "-l", "-c"]
+# Check if ruby_version starts with "ruby-"
+RUN if [[ $ruby_version != ruby-* ]]; then echo "\n\nError: ruby_version argument must start with 'ruby-'\n\n" && exit -1;fi
+SHELL ["/bin/sh", "-c"]
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gawk autoconf automake bison libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool libyaml-dev sqlite3 libgmp-dev libreadline-dev libssl-dev \
+    build-essential wget curl dnsutils vim libev4 libevent-dev make gcc g++ git patch libpq-dev libicu-dev zlib1g-dev pkg-config libc6
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* && truncate -s 0 /var/log/*log
+
+RUN echo "alias ll='ls $LS_OPTIONS -lha'" >> /root/.bashrc
+
+# Non cambiare le istruzioni qui sopra se non STRETTAMENTE NECESSARIO
+
+# *** Install Ruby ***
+
+# Fetch download URL for this version and download archive
+RUN wget $(wget -q -O - "https://cache.ruby-lang.org/pub/ruby/index.txt" | grep -oP "(http.+${ruby_version}.tar.gz)")
+# Extract archive
+RUN tar -xvzf $ruby_version.tar.gz
+# Set workdir to extracted archive
+WORKDIR /$ruby_version
+# Configure
+RUN ./configure --prefix=/compiled_$ruby_version --enable-load-relative --disable-install-doc
+RUN make
+RUN make install
+
+# Placed here in order to not have to recompile Ruby
+ARG app_path=/root/nm_dbus
+ARG bundle_path=/root/nm_dbus_gem_home
+
+# Create specific folders
+RUN mkdir -p $app_path
+
+WORKDIR $app_path
+
+ENV PATH=$PATH:/compiled_${ruby_version}/bin
+ENV GEM_HOME=$app_path
+ENV BUNDLE_PATH=$app_path/vendor
+
+RUN gem install bundler --no-document
+
+RUN apt-get update && apt-get install -y network-manager

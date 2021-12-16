@@ -40,7 +40,7 @@ EXPORT_STRING="export PATH=$PATH:$REMOTE_RUBY_BIN_PATH;
                export BUNDLE_PATH=$REMOTE_BUNDLE_PATH;
                export ON_TARGET=true"
 
-ssh_do "$EXPORT_STRING; cd $REMOTE_FS_PATH; bundle check || bundle install"
+#ssh_do "$EXPORT_STRING; cd $REMOTE_FS_PATH; bundle check || bundle install"
 
 # Execute bundle exec
 ssh_do "$EXPORT_STRING; cd $REMOTE_FS_PATH; bundle exec $@"

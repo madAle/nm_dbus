@@ -1,5 +1,7 @@
 require 'dotenv'
-Dotenv.load File.join(__dir__, 'spec/scripts/.env')
+if ENV['ENV_FILE_PATH'] && File.exist?(ENV['ENV_FILE_PATH'])
+  Dotenv.load ENV['ENV_FILE_PATH']
+end
 
 # A sample Guardfile
 # More info at https://github.com/guard/guard#readme

@@ -10,15 +10,16 @@ SCRIPT_PATH="$(
   pwd -P
 )"
 
+export ENV_FILE_PATH=${SCRIPT_PATH}/.env
 SOURCES_PATH=$SCRIPT_PATH/../..
 
 # Load utility files
 source ${SCRIPT_PATH}/dsl.sh
 
 # Load .env
-if [ -f ${SCRIPT_PATH}/.env ]
+if [ -f ${ENV_FILE_PATH} ]
 then
-  export $(cat ${SCRIPT_PATH}/.env | xargs)
+  export $(cat ${ENV_FILE_PATH} | xargs)
 fi
 
 while getopts a:u:p:h:f:y:g:b: option; do
@@ -44,13 +45,17 @@ do_rsync $SOURCES_PATH $SSH_USER@$TARGETADDR:$REMOTE_FS_PATH
 ssh_do sudo chown -R $SSH_USER $REMOTE_FS_PATH
 
 EXPORT_STRING="export PATH=$PATH:$REMOTE_RUBY_BIN_PATH;
-               export GEM_HOME=$REMOTE_GEM_HOME;
-               export BUNDLE_PATH=$REMOTE_BUNDLE_PATH;
+               export ENV_FILE_PATH=${ENV_FILE_PATH}
                export ON_TARGET=true"
+
+#echo $EXPORT_STRING
 
 # Execute local guard, redirecting its output to /dev/null and send it to background
 #guard -i > guard_log.txt 2>&1 &
 guard -i > /dev/null 2>&1 &
+
+# Remote bundle install
+ssh_do "$EXPORT_STRING; cd $REMOTE_FS_PATH; bundle config set --local path 'vendor/bundle'"
 
 # Execute remote guard
 ssh_do "$EXPORT_STRING; cd $REMOTE_FS_PATH; bundle exec guard -c"

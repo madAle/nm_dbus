@@ -1,0 +1,68 @@
+#!/bin/bash
+
+usage() {
+  echo "Usage: $0 -f <Dockerfile to use>
+                 [-h <Print this help>]
+                 [-r <Ruby version to use>]
+                 [-p <Remote (container) path to folder containing app sources>]
+                 [-y <Remote (container) Ruby 'bin' folder path>]
+                 [-b <Force rebuild of the docker image>]" 1>&2
+  exit 1
+}
+
+SCRIPT_PATH="$(
+  cd "$(dirname "$0")" >/dev/null 2>&1
+  pwd -P
+)"
+
+ENV_FILE_PATH=${SCRIPT_PATH}/.env_docker
+SOURCES_PATH=$SCRIPT_PATH/../..
+RUBY_VERSION=ruby-3.0.1
+IMAGE_NAME=nm_dbus_run_tests:${RUBY_VERSION}
+
+# Load utility files
+source ${SCRIPT_PATH}/dsl.sh
+
+# Load .env
+if [ -f ${ENV_FILE_PATH} ]
+then
+  export $(cat ${ENV_FILE_PATH} | xargs)
+fi
+
+while getopts f:r:h:p:y:b option; do
+  case "${option}" in
+  f) DOCKERFILE_PATH=${OPTARG} ;;
+  r) RUBY_VERSION=${OPTARG} ;;
+  h) usage ;;
+  p) CONTAINER_APP_PATH=${OPTARG} ;;
+  y) REMOTE_RUBY_BIN_PATH=${OPTARG} ;;
+  b) REBUILD_IMAGE=true ;;
+  *) usage ;;
+  esac
+done
+
+if [ -z "$DOCKERFILE_PATH" ]
+then
+  printf "ERROR: You must provide a Dockerfile path\n"
+  exit 1
+fi
+
+# Check if image has already been built
+docker image inspect ${IMAGE_NAME} > /dev/null 2>&1
+
+if [ $? != 0 ]  || [ -n "$REBUILD_IMAGE" ]
+then
+  echo "Rebuilding image"
+  docker build -f ${DOCKERFILE_PATH} -t ${IMAGE_NAME} . --build-arg ruby_version=${RUBY_VERSION} --build-arg app_path=${CONTAINER_APP_PATH}
+fi
+
+#docker run -it --rm --name=nm_dbus_run_tests --mount type=bind,source=${SOURCES_PATH},target=${CONTAINER_APP_PATH} $IMAGE_NAME bash
+#exit
+
+docker run -it --rm --name=nm_dbus_run_tests --mount type=bind,source=${SOURCES_PATH},target=${CONTAINER_APP_PATH} $IMAGE_NAME bash -c " \
+    bundle config set --local path 'vendor/bundle'; \
+    bundle config set --local bin 'vendor/bundle/bin'; \
+    export ENV_FILE_PATH=${ENV_FILE_PATH}
+    bundle --quiet; \
+    export PATH=\$PATH:${CONTAINER_APP_PATH}/vendor/bundle/bin; \
+    guard"

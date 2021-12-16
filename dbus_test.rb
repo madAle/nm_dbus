@@ -1,7 +1,9 @@
 require 'dbus'
 
-# bus = DBus::SessionBus.instance
-bus = DBus::SystemBus.instance
+start = Time.now
+
+# bus = DBus::SystemBus.instance
+bus = DBus::ASystemBus.new
 nm_service = bus.service 'org.freedesktop.NetworkManager'
 
 nm_obj = nm_service.object '/org/freedesktop/NetworkManager'
@@ -10,16 +12,17 @@ nm_iface = nm_obj['org.freedesktop.NetworkManager']
 # p nm_iface['AllDevices']
 
 devices = []
-start = Time.now
 
 nm_iface['AllDevices'].each do |dev_path|
+  bus = DBus::ASystemBus.new
+  nm_service = bus.service 'org.freedesktop.NetworkManager'
   dev_obj = nm_service[dev_path]
   dev_iface = dev_obj['org.freedesktop.NetworkManager.Device']
 
-  dev_iface.on_signal 'StateChanged' do |*params|
-    puts "StateChanged for dev #{dev_iface['Interface']}"
-    puts params
-  end
+  # dev_iface.on_signal 'StateChanged' do |*params|
+  #   puts "StateChanged for dev #{dev_iface['Interface']}"
+  #   puts params
+  # end
 
   dev = {
     'Udi'.downcase.to_sym => dev_iface['Udi'],
@@ -54,7 +57,7 @@ nm_iface['AllDevices'].each do |dev_path|
   p dev
 end
 
-# puts Time.now - start
+puts Time.now - start
 #
 # p devices
 
@@ -94,6 +97,6 @@ end
 # end
 
 
-loop = DBus::Main.new
-loop << bus
-loop.run
+# loop = DBus::Main.new
+# loop << bus
+# loop.run
